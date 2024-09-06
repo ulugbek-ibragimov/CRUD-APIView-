@@ -1,8 +1,11 @@
 from audioop import reverse
+from logging import exception
+
 from django.db.models import Count
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from .models import *
 from .serializers import PostSerializer, CategorySerializer, TagSerializer, ProfileSerializer
 from rest_framework.response import Response
@@ -22,9 +25,14 @@ def api_root(request, format=None):
 
 
 class CategoryAPIView(APIView):
-    def get(self, request):
-        items = Category.objects.all()  #annotate(count=Count('posts')).all()
-        serializer = CategorySerializer(items, many=True)
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get("id", None)  # id topilmasa None qiymat qabul qilinadi
+        if not id:
+            items = Category.objects.all()  # annotate(count=Count('posts')).all()
+            serializer = CategorySerializer(items, many=True)
+            return Response(serializer.data)
+        item = Category.objects.get(id=id)
+        serializer = CategorySerializer(item)
         return Response(serializer.data)
 
     def post(self, request):
@@ -46,10 +54,25 @@ class CategoryAPIView(APIView):
         serializer.save() #bu yerdan serializersdagi def updete chaqiriladi
         return Response(serializer.data)
 
+class CategoryDeleteAPIView(APIView):
+    def delete(self, request, id):
+        try :
+            item = Category.objects.get(id=id)
+        except:
+            return Response({"error": "object not found"})
+        item.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class PostAPIView(APIView):
-    def get(self, request):
-        items = Post.objects.all() #annotate(count=Count('posts')).all()
-        serializer = PostSerializer(items, many=True)
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get("id", None)  # id topilmasa None qiymat qabul qilinadi
+        if not id:
+            items = Post.objects.all() #annotate(count=Count('posts')).all()
+            serializer = PostSerializer(items, many=True)
+            return Response(serializer.data)
+        item = Post.objects.get(id=id)
+        serializer = PostSerializer(item)
         return Response(serializer.data)
 
     def post(self, request):
@@ -70,38 +93,26 @@ class PostAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save() #bu yerdan serializersdagi def updete chaqiriladi
         return Response(serializer.data)
+    def delete(self, request, id):
+        try :
+            item = Post.objects.get(id=id)
+        except:
+            return Response({"error": "method delete is not allowed"})
+        item.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class TagAPIView(ListAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
-class ProfileAPIView(APIView):
-    def get(self, request):
-        items = Profile.objects.all() #annotate(count=Count('posts')).all()
-        serializer = ProfileSerializer(items, many=True)
-        return Response(serializer.data)
+class ProfileListCreateAPIView(ListCreateAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
 
-    def post(self, request):
-        serializer = ProfileSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
-    def put(self, request, *args, **kwarg):
-        id = kwarg.get("id", None) #id topilmasa None qiymat qabul qilinadi
-        if not id:
-            return Response({"error":"method put is not allowed"})
-        try:
-            instance = Profile.objects.get(id=id)
-        except:
-            return Response({"error": "method put is not allowed"})
-        serializer = ProfileSerializer(data=request.data, instance=instance)
-        serializer.is_valid(raise_exception=True)
-        serializer.save() #bu yerdan serializersdagi def updete chaqiriladi
-        return Response(serializer.data)
-
-
-
+class ProfileDetailUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
 
 
 

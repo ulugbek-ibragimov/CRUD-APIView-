@@ -1,14 +1,17 @@
 from django.urls import path
 
 from .serializers import ProfileSerializer
-from .views import CategoryAPIView, api_root, TagAPIView, PostAPIView, ProfileAPIView
+from .views import CategoryAPIView, api_root, TagAPIView, PostAPIView, CategoryDeleteAPIView, \
+    ProfileListCreateAPIView, ProfileDetailUpdateDeleteAPIView
 
 urlpatterns = [
     path('posts/', PostAPIView.as_view(), name='posts'),
     path('posts/<int:id>/', PostAPIView.as_view(), name='posts'),
-    path('category/', CategoryAPIView.as_view(), name='categories'),
     path('category/<int:id>/', CategoryAPIView.as_view(), name='category'),
+    path('category/<int:id>/delete/', CategoryDeleteAPIView.as_view(), name='category'),
+    path('category/', CategoryAPIView.as_view(), name='categories'),
     path('tags/', TagAPIView.as_view(), name='tags'),
-    path('profile/', ProfileAPIView.as_view(), name='profiles'),
+    path('profile/<int:id>/', ProfileDetailUpdateDeleteAPIView.as_view(), name='profiles'),
+    path('profile/', ProfileListCreateAPIView.as_view(), name='profiles'),
     path('', api_root),
 ]

@@ -20,7 +20,7 @@ class TagSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ['firstname', 'lastname', 'avatar',  'facebook', 'instagram', 'twitter' ]
+        fields = ['id', 'firstname', 'lastname', 'avatar',  'facebook', 'instagram', 'twitter' ]
 
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(read_only=True)
